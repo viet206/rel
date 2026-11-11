@@ -1,6 +1,6 @@
-#include "rzvm.h"
+#include "rel_vm.h"
 
-void zexec(word* restrict c) {
+void rel_main(word* restrict c) {
 		int r[10] = {0};
 		word w;
 

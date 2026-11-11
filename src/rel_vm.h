@@ -1,19 +1,5 @@
-#ifndef RAZOR_VM
-#define RAZOR_VM
-
-/* Bytecode Layout
- * - Litte Endian
- * - 1 word = 4 byte
- * 
- * Layout :
- * [ 8 bit opcode ] [ 4 bit r[dst] ] [ 4 bit r[src] ] [ 16 bit imm ]
- *
- */
-
-#define GET_OPCODE ( w & 0xFF )
-#define GET_RDST ( w >> 8 ) & 0xF
-#define GET_RSRC ( w >> 12 ) & 0xF
-#define GET_IMM ( w >> 16 ) & 0xFFFF
+#ifndef REL
+#define REL
 
 #define NEXT \
 		++c; \
@@ -33,6 +19,6 @@ enum {
 typedef unsigned int word;
 typedef unsigned char byte;
 
-void zexec(word* restrict c);
+int rel_main(word* restrict c);
 
 #endif
