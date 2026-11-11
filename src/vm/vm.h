@@ -1,7 +1,7 @@
 #ifndef RAW_EXECUTION_LAYER_H
 #define RAW_EXECUTION_LAYER_H
 
-#define REL_TRACE 0
+#define REL_TRACE 1
 
 /* Define Rel Tracer */
 #if REL_TRACE == 1
@@ -9,16 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REL_TRACE_BEFORE \
-	printf("pc: %d\n",(int)(c - &c[0])); \
-	printf("word: %08x\n",*c);
-
-#define REL_TRACE_AFTER (void)0
+#define REL_DUMP \
+	fprintf(stderr,"word: 0x%x\n",word); \
+	fprintf(stderr,"pc: 0x%x\n",(int)(c - &c[0]))
 
 #else
 
-#define REL_TRACE_BEFORE (void)0
-#define REL_TRACE_AFTER (void)0
+#define REL_DUMP (void)0
 
 #endif
 
@@ -32,8 +29,7 @@
 // DR = Source Register
 #define GET_DR ( word >> 12 ) & 0xF
 
-#define GET_IMM16 ( word >> 16 ) & 0xFFFF
-#define GET_IMM20 ( word >> 12 ) & 0xFFFFF
+#define GET_IMM ( word >> 16 ) & 0xFFFF
 
 // Define Alias Register
 #define SR r[GET_SR]
@@ -48,9 +44,9 @@
 	[name] = &&op,
 
 #define DEF_OPCODE(name,handler) \
-	name: { REL_TRACE_BEFORE; \
+	name: { \
+		REL_DUMP; \
 		handler; \
-		REL_TRACE_AFTER; \
 		NEXT; \
 	}
 

@@ -1,4 +1,4 @@
-#include "rel_vm.h"
+#include "vm.h"
 
 int rel_main(word_t* restrict c) {
 	int r[10] = {0};
@@ -16,7 +16,7 @@ int rel_main(word_t* restrict c) {
 	goto *table[GET_OPCODE];
 
 	DEF_OPCODE(op_mov,
-		r[GET_DR] = GET_IMM20
+		r[GET_DR] = GET_IMM
 	)
 
 	DEF_OPCODE(op_add,__MATH__(+));
