@@ -24,3 +24,9 @@ Vì mọi thứ là nhãn ( kể cả hàm ) nên chỉ cần nhảy tuyệt đ�
 
 ## Hàm
 Bản chất là 1 khối có nhãn , khi thực thi xong nếu không nhảy lại về vị trí gọi thì nó sẽ bị trôi xuống
+
+## Trace VM
+Có 2 loại Trace tương ứng với 2 trạng thái của Handler: Trace_Before và Trace_After
+
+- Trace Before : In ra những trạng thái của Máy ảo trước khi thực thi Handler
+- Trace After : In ra trạng thái của máy ảo sau khi thực thi Handler
