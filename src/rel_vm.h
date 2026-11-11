@@ -25,11 +25,21 @@
 /* Define Main Logic VM */
 
 #define GET_OPCODE word & 0xFF
-#define GET_RDST ( word >> 8 ) & 0xF
-#define GET_RSRC ( word >> 12 ) & 0xF
+
+// SR = Source Register
+#define GET_SR ( word >> 8 ) & 0xF
+
+// DR = Source Register
+#define GET_DR ( word >> 12 ) & 0xF
+
 #define GET_IMM16 ( word >> 16 ) & 0xFFFF
 #define GET_IMM20 ( word >> 12 ) & 0xFFFFF
 
+// Define Alias Register
+#define SR r[GET_SR]
+#define DR r[GET_DR]
+
+// Define Next Handler
 #define NEXT \
 	word = *(++c); \
 	goto *table[GET_OPCODE]
@@ -39,15 +49,19 @@
 
 #define DEF_OPCODE(name,handler) \
 	name: { REL_TRACE_BEFORE; \
-		\
 		handler; \
-		\
-		REL_TRACE_AFTER \
+		REL_TRACE_AFTER; \
 		NEXT; \
 	}
 
 #define __MATH__(operator) \
-	r[GET_RDST] operator##= r[GET_RSRC]
+	DR operator##= SR
+
+#define __NATIVE_JMP__(op) \
+	if ( DR op SR ) { \
+		pc += GET_IMM16; \
+	} \
+	NEXT
 
 enum {
 	MOV = 0x00,

@@ -16,7 +16,7 @@ int rel_main(word_t* restrict c) {
 	goto *table[GET_OPCODE];
 
 	DEF_OPCODE(op_mov,
-		r[GET_RDST] = GET_IMM20
+		r[GET_DR] = GET_IMM20
 	)
 
 	DEF_OPCODE(op_add,__MATH__(+));
