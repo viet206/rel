@@ -1,34 +1,36 @@
 #ifndef RAW_EXECUTION_LAYER_H
 #define RAW_EXECUTION_LAYER_H
 
-#define REL_TRACE 1
+#define __VERSION "0.1-preview"
+
+#define ENABLE_DEBUG 1
 
 /* Define Rel Tracer */
-#if REL_TRACE == 1
+#if ENABLE_DEBUG == 1
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REL_DUMP \
-	fprintf(stderr,"word: 0x%x\n",word); \
-	fprintf(stderr,"pc: 0x%x\n",(int)(c - &c[0]))
+#define REL_DUMP_ONLY \
+	printf("pc: %d\n",(int)(c - &c[0])); \
+	printf("op: %02x\n",GET_OPCODE); \
+	printf("dst: %02x\n",GET_DR); \
+	printf("src: %02x\n",GET_SR); \
+	printf("imm: %d\n",GET_IMM); \
+	++c; \
+	goto *table[GET_OPCODE]
 
 #else
 
-#define REL_DUMP (void)0
+#define REL_DUMP_ONLY (void)0
 
 #endif
 
 /* Define Main Logic VM */
 
 #define GET_OPCODE word & 0xFF
-
-// SR = Source Register
 #define GET_SR ( word >> 8 ) & 0xF
-
-// DR = Source Register
 #define GET_DR ( word >> 12 ) & 0xF
-
 #define GET_IMM ( word >> 16 ) & 0xFFFF
 
 // Define Alias Register
@@ -41,11 +43,11 @@
 	goto *table[GET_OPCODE]
 
 #define DEF_LABEL(name,op) \
-	[name] = &&op,
+	[name] = &&op
 
 #define DEF_OPCODE(name,handler) \
 	name: { \
-		REL_DUMP; \
+		REL_DUMP_ONLY; \
 		handler; \
 		NEXT; \
 	}
@@ -55,7 +57,7 @@
 
 #define __NATIVE_JMP__(op) \
 	if ( DR op SR ) { \
-		pc += GET_IMM16; \
+		pc += GET_IMM; \
 	} \
 	NEXT
 

@@ -1,18 +1,23 @@
 #include "vm.h"
+#include <stdio.h>
 
 int rel_main(word_t* restrict c) {
 	int r[10] = {0};
 	word_t word;
+	int i;
 
 	static const void* restrict table[] = {
-		DEF_LABEL(MOV,op_mov)
-		DEF_LABEL(ADD,op_add)
-		DEF_LABEL(SUB,op_sub)
-		
-		[EXIT] = &&op_exit
+		DEF_LABEL(MOV,op_mov),
+		DEF_LABEL(ADD,op_add),
+		DEF_LABEL(SUB,op_sub),
+		DEF_LABEL(EXIT,op_exit)
 	};
 
 	word = *c;
+
+	printf("op: %02x\n",GET_OPCODE);
+	goto op_exit;
+	
 	goto *table[GET_OPCODE];
 
 	DEF_OPCODE(op_mov,
