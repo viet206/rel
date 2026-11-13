@@ -14,10 +14,7 @@ int rel_main(word_t* restrict c) {
 	};
 
 	word = *c;
-
-	printf("op: %02x\n",GET_OPCODE);
-	goto op_exit;
-	
+	REL_DUMP_BOOT;
 	goto *table[GET_OPCODE];
 
 	DEF_OPCODE(op_mov,

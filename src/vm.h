@@ -3,7 +3,7 @@
 
 #define __VERSION "0.1-preview"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 
 /* Define Rel Tracer */
 #if ENABLE_DEBUG == 1
@@ -20,17 +20,23 @@
 	++c; \
 	goto *table[GET_OPCODE]
 
+#define REL_DUMP_BOOT \
+	printf("opcode: %02x",GET_OPCODE); \
+	goto op_exit
+
 #else
 
 #define REL_DUMP_ONLY (void)0
+#define REL_DUMP_BOOT (void)0
 
 #endif
 
 /* Define Main Logic VM */
 
+// [ imm ] [ sr ] [ dr ] [ opcode ]
 #define GET_OPCODE word & 0xFF
-#define GET_SR ( word >> 8 ) & 0xF
-#define GET_DR ( word >> 12 ) & 0xF
+#define GET_DR ( word >> 8 ) & 0xF
+#define GET_SR ( word >> 12 ) & 0xF
 #define GET_IMM ( word >> 16 ) & 0xFFFF
 
 // Define Alias Register
@@ -55,7 +61,7 @@
 #define __MATH__(operator) \
 	DR operator##= SR
 
-#define __NATIVE_JMP__(op) \
+#define __JMP__(op) \
 	if ( DR op SR ) { \
 		pc += GET_IMM; \
 	} \

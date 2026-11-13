@@ -2,13 +2,13 @@
 #include "vm.h"
 #include <stdio.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 int main() {
 	gen_init(256);
 
-	MOV(0,123);
-	MOV(1,256);
+	MOV(0,12);
+	MOV(1,34);
 	ADD(0,1);
 	EXIT;
 
