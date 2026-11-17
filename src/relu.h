@@ -10,7 +10,7 @@
 // op dst imm
 #define RR_PATTERN 0x36
 // op dst src
-#define SINGLE_PATTERN 0x99
+#define EXIT_PATTERN 0x99
 
 int relu_dasm(word_t* pcode);
 

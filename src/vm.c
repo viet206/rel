@@ -6,23 +6,23 @@ int rel_main(word_t* restrict c) {
 	word_t word;
 	int i;
 
-	static const void* restrict table[] = {
-		DEF_LABEL(MOV,op_mov),
-		DEF_LABEL(ADD,op_add),
-		DEF_LABEL(SUB,op_sub),
-		DEF_LABEL(EXIT,op_exit)
+	static const void* const table[] = {
+		DEF_LABEL(OP_MOV,handler_mov),
+		DEF_LABEL(OP_ADD,handler_add),
+		DEF_LABEL(OP_SUB,handler_sub),
+		DEF_LABEL(OP_EXIT,handler_exit)
 	};
 
 	word = *c;
-	goto *table[READ_OPCODE];
+	goto *table[READ_OPCODE(word)];
 
-	DEF_OPCODE(op_mov,
-		r[READ_DSTR] = READ_IMM16
+	DEF_OPCODE(handler_mov,
+		r[READ_DSTR(word)] = READ_IMM16(word)
 	)
 
-	DEF_OPCODE(op_add,__MATH__(+));
-	DEF_OPCODE(op_sub,__MATH__(-));
+	DEF_OPCODE(handler_add,__MATH__(+));
+	DEF_OPCODE(handler_sub,__MATH__(-));
 
-op_exit:
+handler_exit:
 	return r[0];
 }

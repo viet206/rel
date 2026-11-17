@@ -8,22 +8,29 @@
 /* Define Main Logic VM */
 
 // [ imm ] [ sr ] [ dr ] [ opcode ]
-#define READ_OPCODE word & 0xFF
-#define READ_DSTR ( word >> 8 ) & 0xF
-#define READ_SRCR ( word >> 12 ) & 0xF
-#define READ_IMM16 ( word >> 16 ) & 0xFFFF
+#define READ_OPCODE(word) word & 0xFF
+#define READ_DSTR(word) ( word >> 8 ) & 0xF
+#define READ_SRCR(word) ( word >> 12 ) & 0xF
+#define READ_IMM16(word) ( word >> 16 ) & 0xFFFF
+
+// Write General Instruction
+#define __WGI__(word,op,dst,src,imm16) \
+  word |= op; \
+  word |= ( dst << 8 ); \
+  word |= ( src << 12 ); \
+  word |= ( imm16 << 16 )
 
 // Define Alias Register
-#define SR r[READ_SRCR]
-#define DR r[READ_DSTR]
+#define SR r[READ_SRCR(word)]
+#define DR r[READ_DSTR(word)]
 
 // Define Next Handler
 #define NEXT \
 	word = *(++c); \
-	goto *table[READ_OPCODE]
+	goto *table[READ_OPCODE(word)]
 
 #define DEF_LABEL(name,op) \
-	[##name] = &&op
+	[name] = &&op
 
 #define DEF_OPCODE(name,handler) \
 	name: { \
@@ -36,7 +43,7 @@
 
 #define __JMP__(op) \
 	if ( DR op SR ) { \
-		pc += GET_IMM16; \
+		pc += GET_IMM16(word); \
 	} \
 	NEXT
 

@@ -1,20 +1,8 @@
-# Hành vi Relc và RelVM
+# Kiến trúc REL
+REL gồm có 3 mục chính là : relc ( rel compiler ) , relu ( rel untils ) , rel ( coreVM )
 
-## Rel Codegen ( rcgen )
-là 1 header nhỏ trong thư mục của Relc . được viết như 1 Assembler nhỏ được thiết kế trên nền của ngôn ngữ C để tự động hóa việc viết mã Bytecode an toàn và chính xác hơn:
-```c
-#include "rcgen.h"
-
-    rc_init(16);
-
-    // Thân đoạn mã Assembler
-    MOV(0,16);
-    MOV(1,16);
-    ADD(0,1);
-    EXIT();
-
-    rc_exec(result);
-```
+## RELU ( REL Utils )
+1 hộp công cụ chuyên để thao tác với mã nguồn của REL
 ## RelVM
 
 ### Layout Word

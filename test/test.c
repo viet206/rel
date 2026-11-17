@@ -1,37 +1,22 @@
-#include "cgen.h"
 #include "vm.h"
+#include "relu.h"
 #include <stdio.h>
 
-#define DEBUG 0
+#define MOV(dst,imm) \
+  __WGI__(word,OP_MOV,dst,0,imm); \
+  buf[pc++] = word
+
+#define EXIT __WGI__(word,OP_EXIT,0,0,0); buf[pc++] = word
 
 int main() {
-	gen_init(256);
 
-	MOV(0,12);
-	MOV(1,34);
-	ADD(0,1);
-	EXIT;
+  word_t buf[32] = {0};
+  int pc = 0;
+  int word = 0;
 
+  MOV(0,10);
+  MOV(1,100);
+  EXIT;
 
-#if DEBUG == 1
-
-	cell_t* a = (cell_t*) arr;
-
-	for ( int i = 0 ; i < 32 ; i++ ) {
-		if ( ( i % 8 ) == 0 ) {
-			puts("");
-		}
-
-		if ( ( i % 4 ) == 0 ) printf(" ");
-
-		printf("%02x",a[i]);
-	}
-	puts("");
-
-#else
-
-	gen_exec(r);
-	printf("result: %d\n",r);
-	
-#endif
+  relu_dasm(buf);
 }

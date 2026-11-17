@@ -1,11 +1,22 @@
 #include "relu.h"
 
+#define NEXT_PATTERN \
+  word = *(pcode++); \
+  op = READ_OPCODE(word); \
+  pattern = type_pattern[op]; \
+  goto *dp[pattern]
+
+#define REG_RANGE(reg) \
+  ( ! ( reg >= 0 && reg <= 7 ) )
+
 int relu_dasm(word_t* pcode) {
-	const int pattern[] = {
-		[OP_MOV] = RI_PATTERN,
-		[OP_ADD] = RR_PATTERN,
-		[OP_EXIT] = SINGLE_PATTERN
-	};
+
+  const int type_pattern[] = {
+    [OP_MOV] = RI_PATTERN,
+    [OP_ADD] = RR_PATTERN,
+    [OP_SUB] = RR_PATTERN,
+    [OP_EXIT] = EXIT_PATTERN
+  };
 
 	const char* const op_name[] = {
 		[OP_MOV] = "mov",
@@ -15,73 +26,88 @@ int relu_dasm(word_t* pcode) {
 	};
 
 	const char* const reg_name[] = {
-		"r0",
-		"r1",
-		"r2",
-		"r3",
-		"r4",
-		"r5",
-		"r6",
-		"r7"
+		[0] = "r0",
+		[1] = "r1",
+		[2] = "r2",
+		[3] = "r3",
+		[4] = "r4",
+		[5] = "r5",
+		[6] = "r6",
+		[7] = "r7"
 	};
 
-	int word = *pcode++;
-	int dst , src , imm = 0;
-	int op = READ_OPCODE;
+  const void* const dp[] = {
+    [RI_PATTERN] = &&ri,
+    [RR_PATTERN] = &&rr,
+    [FULL_PATTERN] = &&full,
+    [EXIT_PATTERN] = &&exit
+  };
 
-	while ( op != OP_EXIT ) {		
-		switch (pattern[op]) {
-			case RR_PATTERN:
-				dst = READ_DSTR;
-				src = READ_SRCR;
+  int word , op , imm , dst , pattern , src = 0;
 
-				printf("%s %s %s\n",
-					op_name[op],
-					reg_name[dst],
-					reg_name[src]
-				);
+  NEXT_PATTERN;
 
-				word = *pcode++;
-				op = READ_OPCODE;
-				
-				break;
-			case RI_PATTERN:
-				dst = READ_DSTR;
-                imm = READ_IMM16;
+ri:
 
-                printf("%s %s %d\n",
-					op_name[op],
-					reg_name[dst],
-					imm
-                );
+  imm = READ_IMM16(word);
+  dst = READ_DSTR(word);
 
-                word = *pcode++;
-                op = READ_OPCODE;
+  if (REG_RANGE(dst)) {
+    printf("register: r%d not valid\n",dst);
+    goto exit;
+  }
 
-                break;
+  printf("%s %s , %d\n",
+    op_name[op],
+    reg_name[dst],
+    imm
+  );
 
-			case FULL_PATTERN:
-				dst = READ_DSTR;
-                src = READ_SRCR;
-				imm = READ_IMM16;
+  NEXT_PATTERN;
 
-                printf("%s %s %s %d\n",
-                    op_name[op],
-                    reg_name[dst],
-                    reg_name[src],
-					imm
-				);
+rr:
 
-                 word = *pcode++;
-                 op = READ_OPCODE;
+  dst = READ_DSTR(word);
+  src = READ_SRCR(word);
 
-                 break;
+  if ((REG_RANGE(dst)) || (REG_RANGE(src))) {
+    printf("Dump RR_PATTERN\n");
+    printf("dst : r%d\n",dst);
+    printf("src : r%d\n",src);
+    goto exit;
+  }
 
-			case SINGLE_PATTERN:
-				goto exit_point;
-		}
-	}
-	
-exit_point:
-	return 0;
+  printf("%s %s , %s\n",
+    op_name[op],
+    reg_name[dst],
+    reg_name[src]
+  );
+
+  NEXT_PATTERN;
+
+full:
+
+  dst = READ_DSTR(word);
+  src = READ_SRCR(word);
+  imm = READ_IMM16(word);
+
+  if ((REG_RANGE(dst)) || (REG_RANGE(src))) {
+    printf("Dump FULL_PATTERN\n");
+    printf("dst: r%d\n",dst);
+    printf("src: r%d\n",src);
+    goto exit;
+  }
+
+  printf("%s %s , %s , %d\n",
+    op_name[op],
+    reg_name[dst],
+    reg_name[src],
+    imm
+  );
+
+  NEXT_PATTERN;
+
+exit:
+
+  return 0;
 }
