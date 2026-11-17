@@ -14,11 +14,10 @@ int rel_main(word_t* restrict c) {
 	};
 
 	word = *c;
-	REL_DUMP_BOOT;
-	goto *table[GET_OPCODE];
+	goto *table[READ_OPCODE];
 
 	DEF_OPCODE(op_mov,
-		r[GET_DR] = GET_IMM
+		r[READ_DSTR] = READ_IMM16
 	)
 
 	DEF_OPCODE(op_add,__MATH__(+));
