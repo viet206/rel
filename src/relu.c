@@ -1,113 +1,106 @@
 #include "relu.h"
 
-#define NEXT_PATTERN \
-  word = *(pcode++); \
-  op = READ_OPCODE(word); \
-  pattern = type_pattern[op]; \
-  goto *dp[pattern]
-
-#define REG_RANGE(reg) \
-  ( ! ( reg >= 0 && reg <= 7 ) )
-
 int relu_dasm(word_t* pcode) {
-
-  const int type_pattern[] = {
-    [OP_MOV] = RI_PATTERN,
-    [OP_ADD] = RR_PATTERN,
-    [OP_SUB] = RR_PATTERN,
-    [OP_EXIT] = EXIT_PATTERN
-  };
 
 	const char* const op_name[] = {
 		[OP_MOV] = "mov",
 		[OP_ADD] = "add",
 		[OP_SUB] = "sub",
+    [OP_MUL] = "mul",
+    [OP_DIV] = "div",
+    [OP_JNE] = "jne",
+    [OP_JEQ] = "jeq",
+    [OP_JLT] = "jlt",
+    [OP_JGT] = "jgt",
 		[OP_EXIT] = "exit"
 	};
 
-	const char* const reg_name[] = {
-		[0] = "r0",
-		[1] = "r1",
-		[2] = "r2",
-		[3] = "r3",
-		[4] = "r4",
-		[5] = "r5",
-		[6] = "r6",
-		[7] = "r7"
-	};
-
   const void* const dp[] = {
-    [RI_PATTERN] = &&ri,
-    [RR_PATTERN] = &&rr,
-    [FULL_PATTERN] = &&full,
-    [EXIT_PATTERN] = &&exit
+    [OP_MOV] = &&RI_PATTERN,
+    [OP_ADD] = &&MATH_PATTERN,
+    [OP_SUB] = &&MATH_PATTERN,
+    [OP_MUL] = &&MATH_PATTERN,
+    [OP_DIV] = &&MATH_PATTERN,
+    [OP_JNE] = &&JUMP_PATTERN,
+    [OP_JEQ] = &&JUMP_PATTERN,
+    [OP_JGT] = &&JUMP_PATTERN,
+    [OP_JLT] = &&JUMP_PATTERN,
+    [OP_EXIT] = &&EXIT_POINT
   };
 
-  int word , op , imm , dst , pattern , src = 0;
+  int word;
+  int pattern;
+  int pc = 0;
 
-  NEXT_PATTERN;
+  word_t* point = pcode;
 
-ri:
+  puts("Bytecode reverse translation");
+  puts("Little-Endian 32 bit\n");
+  puts ("address  |  word  |  asm");
 
-  imm = READ_IMM16(word);
-  dst = READ_DSTR(word);
+  DASM_NEXT_PATTERN;
 
-  if (REG_RANGE(dst)) {
-    printf("register: r%d not valid\n",dst);
-    goto exit;
-  }
+RI_PATTERN:
 
-  printf("%s %s , %d\n",
-    op_name[op],
-    reg_name[dst],
-    imm
+  printf("%08x: %08x  %s r%d , %d\n",
+    pc,
+    word,
+    op_name[READ_OPCODE(word)],
+    READ_DST_REG(word),
+    READ_IMM16(word)
   );
 
-  NEXT_PATTERN;
+  DASM_NEXT_PATTERN;
 
-rr:
+MATH_PATTERN:
 
-  dst = READ_DSTR(word);
-  src = READ_SRCR(word);
-
-  if ((REG_RANGE(dst)) || (REG_RANGE(src))) {
-    printf("Dump RR_PATTERN\n");
-    printf("dst : r%d\n",dst);
-    printf("src : r%d\n",src);
-    goto exit;
-  }
-
-  printf("%s %s , %s\n",
-    op_name[op],
-    reg_name[dst],
-    reg_name[src]
+  printf("%08x: %08x  %s r%d , r%d , r%d\n",
+    pc,
+    word,
+    op_name[READ_OPCODE(word)],
+    READ_DST_REG(word),
+    READ_SRC_REG(word),
+    READ_OPT_REG(word)
   );
 
-  NEXT_PATTERN;
+  DASM_NEXT_PATTERN;
 
-full:
+BASE_PATTERN:
 
-  dst = READ_DSTR(word);
-  src = READ_SRCR(word);
-  imm = READ_IMM16(word);
-
-  if ((REG_RANGE(dst)) || (REG_RANGE(src))) {
-    printf("Dump FULL_PATTERN\n");
-    printf("dst: r%d\n",dst);
-    printf("src: r%d\n",src);
-    goto exit;
-  }
-
-  printf("%s %s , %s , %d\n",
-    op_name[op],
-    reg_name[dst],
-    reg_name[src],
-    imm
+  printf("%s r%d , r%d , %d\n",
+    op_name[READ_OPCODE(word)],
+    READ_DST_REG(word),
+    READ_SRC_REG(word),
+    READ_IMM16(word)
   );
 
-  NEXT_PATTERN;
+  DASM_NEXT_PATTERN;
 
-exit:
+JUMP_PATTERN:
+
+  printf("%08x: %08x  %s r%d , r%d , ",
+      pc,
+      word,
+      op_name[READ_OPCODE(word)],
+      READ_DST_REG(word),
+      READ_SRC_REG(word)
+  );
+
+  if ( READ_IMM16(word) > 0 ) {
+    printf("+%d\n",READ_IMM16(word));
+  }else{
+    printf("%d\n",READ_IMM16(word));
+  }
+
+  DASM_NEXT_PATTERN;
+
+EXIT_POINT:
+
+  printf("%08x: %08x  %s\n",
+      pc,
+      word,
+      op_name[READ_OPCODE(word)]
+  );
 
   return 0;
 }
