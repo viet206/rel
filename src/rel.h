@@ -6,23 +6,30 @@
 #define READ_OPCODE(word) word & 0xFF
 #define READ_DST_REG(word) ( word >> 8 ) & 0xF
 #define READ_SRC_REG(word) ( word >> 12 ) & 0xF
-#define READ_IMM16(word) ( word >> 16 ) & 0xFFFF
 #define READ_OPT_REG(word) ( word >> 16 ) & 0xF
-#define GET_IMM12(word) ( word >> 20 ) & 0xFFF
+
+#define READ_IMM12(word) (( word >> 20 ) & 0xFFF)
+#define READ_IMM16(word) (( word >> 16 ) & 0xFFFF )
+#define READ_IMM20(word) (( word >> 12 ) & 0xFFFFF )
 
 // Write General Instruction
-#define __WGI16__(word,op,dst,src,imm16) \
+#define __WGI16__(word,op,dst,src,imm) \
   word = ( op & 0xFF ) | \
-        ( dst << 8 ) | \
-        ( src << 12 ) | \
-        ( imm16 << 16 )
+        (( dst & 0xF ) << 8 ) | \
+        (( src & 0xF ) << 12 ) | \
+        (( imm & 0xFFFF ) << 16 )
 
-#define __WGI12__(word,op,dst,src,opt,imm12) \
+#define __WGI12__(word,op,dst,src,opt,imm) \
   word = ( op & 0xFF ) | \
-        ( dst << 8 ) | \
-        ( src << 12 ) | \
-        ( opt << 16 ) | \
-        ( imm12 << 20 )
+        (( dst & 0xF ) << 8 ) | \
+        (( src & 0xF ) << 12 ) | \
+        (( opt & 0xF ) << 16 ) | \
+        (( imm & 0xFFF ) << 20 )
+
+#define __WGI20__(word,op,dst,imm) \
+  word = ( op & 0xFF ) | \
+        (( dst & 0xF ) << 8 ) | \
+        (( imm & 0xFFFFF ) << 12 )
 
 // Define Alias Register
 #define SRC_REG r[READ_SRC_REG(word)]
@@ -35,10 +42,10 @@
 	goto *table[READ_OPCODE(word)]
 
 #define DEF_LABEL(name,op) \
-	[name] = &&op
+	[name] = &&handler_##op
 
 #define DEF_OPCODE(name,handler) \
-	name: { \
+	handler_##name: { \
 		handler; \
 		NEXT; \
 	}
@@ -61,11 +68,22 @@ enum {
   OP_JEQ,
   OP_JLT,
   OP_JGT,
+  OP_CALL,
+  OP_RET,
+  OP_LBU,
+  OP_SBU,
 	OP_EXIT = 0xFF
 };
 
 typedef unsigned int word_t;
 typedef unsigned char cell_t;
+
+typedef union {
+
+  word_t* restrict w;
+  cell_t* restrict c;
+
+}ptr_t;
 
 int rel_main(word_t* restrict c);
 

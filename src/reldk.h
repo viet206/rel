@@ -1,5 +1,5 @@
-#ifndef REL_UTILS
-#define REL_UTILS
+#ifndef REL_DEVELOPMENT_KIT
+#define REL_DEVELOPMENT_KIT
 
 #include "rel.h"
 #include <stdio.h>
